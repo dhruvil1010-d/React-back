@@ -157,8 +157,8 @@ app.post("/register", async (req, res) => {
     await new User({ name, email, password, phonenumber }).save();
     res.json({ message: "User Registered Successfully" });
 
-  } catch {
-    res.status(500).json({ message: "Error registering user" });
+  } catch(e) {
+    res.status(500).json({ message: `Error registering user ${e}` });
   }
 });
 
