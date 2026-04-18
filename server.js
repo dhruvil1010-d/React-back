@@ -22,8 +22,6 @@ if (!process.env.MONGO_URL) {
 }
 
 mongoose.connect(mongoUrl, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 10000
 })
   .then(() => {
@@ -245,6 +243,16 @@ app.delete('/products/:id', async (req, res) => {
     res.json({ message: "Product deleted" });
   } catch (err) {
     res.status(500).json({ message: "Error deleting product" });
+  }
+});
+
+// Explicit route to fetch all products
+app.get('/products/all', async (_req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching products" });
   }
 });
 
