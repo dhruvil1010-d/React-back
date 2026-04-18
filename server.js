@@ -230,11 +230,12 @@ app.delete('/cart/remove/:id', async (req, res) => {
   res.json({ message: "Item removed" });
 });
 
-// ================== PRODUCTS ==================
-app.get('/products', async (_req, res) => {
-  res.json(await Product.find());
+// ================== HEALTH CHECK ==================
+app.get('/', (_req, res) => {
+  res.json({ status: "OK", message: "Starphone backend running" });
 });
 
+// ================== PRODUCTS ==================
 app.post('/products', async (req, res) => {
   res.json(await new Product(req.body).save());
 });
