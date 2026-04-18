@@ -12,14 +12,28 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ================== MongoDB ==================
-mongoose.connect(process.env.MONGO_URL)
+const mongoUrl = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/starphone";
+
+if (!process.env.MONGO_URL) {
+  console.warn("MONGO_URL is not set. Falling back to local MongoDB.");
+}
+
+mongoose.connect(mongoUrl, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 10000
+})
   .then(() => {
     console.log("MongoDB Connected");
     initializeAdmins();
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    console.error("MongoDB connection error:", err.message);
+    console.error(err);
+  });
 
 // ================== Razorpay ==================
 const razorpay = new Razorpay({
@@ -151,14 +165,19 @@ app.post("/register", async (req, res) => {
   try {
     const { name, email, password, phonenumber } = req.body;
 
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ message: "Request body is missing or invalid JSON" });
+    }
+
     if (await User.findOne({ email }))
       return res.status(400).json({ message: "Email already registered" });
 
     await new User({ name, email, password, phonenumber }).save();
     res.json({ message: "User Registered Successfully" });
 
-  } catch(e) {
-    res.status(500).json({ message: `Error registering user ${e}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error registering user", error: err.message });
   }
 });
 
